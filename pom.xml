@@ -1,0 +1,315 @@
+<!--
+  (c) Copyright 2017 EntIT Software LLC, a Micro Focus company
+  
+  Permission is hereby granted, free of charge, to any person obtaining a 
+  copy of this software and associated documentation files (the 
+  "Software"), to deal in the Software without restriction, including without 
+  limitation the rights to use, copy, modify, merge, publish, distribute, 
+  sublicense, and/or sell copies of the Software, and to permit persons to 
+  whom the Software is furnished to do so, subject to the following 
+  conditions:
+  
+  The above copyright notice and this permission notice shall be included 
+  in all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
+  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+  PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
+  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+  IN THE SOFTWARE.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.fortify.runcmd</groupId>
+  <artifactId>runcmd</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  
+  <organization>
+		<name>Micro Focus Fortify</name>
+		<url>https://software.microfocus.com/en-us/software/application-security</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<id>rsenden</id>
+			<name>Ruud Senden</name>
+			<organization>Micro Focus Fortify</organization>
+		</developer>
+	</developers>
+	<scm>
+		<developerConnection>scm:git:https://github.com/fortify-ps/RunCmd.git</developerConnection>
+		<tag>master</tag>
+	</scm>
+	<inceptionYear>2019</inceptionYear>
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.kohsuke.metainf-services</groupId>
+			<artifactId>metainf-services</artifactId>
+			<version>1.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<failOnError>false</failOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<id>javadoc</id>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.1</version>
+				<configuration>
+					<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<tagNameFormat>@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M3</version>
+				<configuration>
+					<argLine>-Dlog4j.logLevel=OFF -Dlog4j.logLevelFortify=INFO -Dlog4j.logFile=unittest.log -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.6</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>site</goal>
+						</goals>
+						<configuration>
+							<generateProjectInfo>false</generateProjectInfo>
+							<generateReports>false</generateReports>
+							<generateSitemap>false</generateSitemap>
+							<relativizeDecorationLinks>false</relativizeDecorationLinks>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-markdown</artifactId>
+						<version>1.7</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-apt</artifactId>
+						<version>1.8</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<finalName>RunCmd-${project.version}</finalName>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.fortify.runcmd.main.RunCmdFromCLI</mainClass>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.handlers</resource>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/spring.schemas</resource>
+								</transformer>
+								<transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer">
+                                </transformer>
+							</transformers>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+                    <dependency>
+                        <groupId>com.github.edwgiz</groupId>
+                        <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+                        <version>2.8.1</version>
+                    </dependency>
+                </dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>download-sources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.14</version>
+				<executions>
+					<execution>
+						<id>download-licenses</id>
+						<phase>package</phase>
+						<goals>
+							<goal>download-licenses</goal>
+							<goal>add-third-party</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<thirdPartyFilename>THIRD_PARTY_LICENSES.TXT</thirdPartyFilename>
+							<useMissingFile>true</useMissingFile>
+	
+							<licensesOutputDirectory>${project.build.directory}/THIRD_PARTY_LICENSES</licensesOutputDirectory>
+							<licensesOutputFile>${project.build.directory}/THIRD_PARTY_LICENSES.XML</licensesOutputFile>
+	
+							<licenseMerges>
+								<licenseMerge>Apache 2.0|The Apache Software License, Version
+									2.0|Apache License, Version 2.0|apache_v2</licenseMerge>
+								<licenseMerge>CDDL 1.0|COMMON DEVELOPMENT AND DISTRIBUTION
+									LICENSE (CDDL) Version 1.0|Common Development and Distribution
+									License (CDDL) v1.0|cddl_v1</licenseMerge>
+								<licenseMerge>GNU LGPL 2.1|GNU Lesser General Public License
+									(LGPL), Version 2.1|GNU Lesser General Public License, version
+									2.1|lgpl_v2_1</licenseMerge>
+								<licenseMerge>GNU LGPL 3|GNU LESSER GENERAL PUBLIC LICENSE,
+									Version 3|GNU Lesser General Public Licence|GNU Lesser General
+									Public License|GNU LESSER GENERAL PUBLIC LICENSE</licenseMerge>
+								<licenseMerge>Dual license: CDDL 1.0 and GPL v2|Dual license
+									consisting of the CDDL v1.0 and GPL
+									v2|CDDL+GPLv2|CDDL+GPL|CDDL+GPL License</licenseMerge>
+								<licenseMerge>Dual license: CDDL 1.1 and GPL v2|Dual license
+									consisting of the CDDL v1.1 and GPL v2|CDDL1_1+GPLv2</licenseMerge>
+								<licenseMerge>Dual License: CDDL 1.0 and GPL V2 with Classpath
+									Exception|CDDL + GPLv2 with classpath exception</licenseMerge>
+							</licenseMerges>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.2</version>
+				<executions>
+					<execution>
+						<id>copy-config-files</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/config</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-licenses</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/THIRD_PARTY_LICENSES</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/src/license</directory>
+									<include>Creative Commons 2.5 Legal Code.html</include>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/dist.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assembly-dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<finalName>RunCmd-${project.version}-dist</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<description>This is a general-purpose utility that can be used to run other commands, after replacing command parameter values. This can be used, for example, to retrieve credentials from some credential store or vault, avoiding having to provide these credentials on the command line in plain text.</description>
+  
+</project>
