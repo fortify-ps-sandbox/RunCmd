@@ -49,7 +49,7 @@ public class RunCmdFromCLI {
 			String operation = argsList.remove(0);
 			switch (operation.toLowerCase()) {
 				case "runjar": runJar(argsList);
-				case "runexe": runExe(argsList);
+				case "runcmd": runExe(argsList);
 				default: printUsage(); break;
 			}
 		}
@@ -58,6 +58,7 @@ public class RunCmdFromCLI {
 	private static void runExe(List<String> argsList) {
 		String cmd = argsList.remove(0);
 		String[] processedArgs = getProcessedArgs(argsList);
+		// TODO Run cmd with the given processedArgs, connecting stdin and stdout to our own stdin/stdout
 	}
 
 	private static void runJar(List<String> argsList) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException {
