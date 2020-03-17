@@ -30,3 +30,8 @@ java
    -SomeOtherCredential {{pwtool:some other credential encoded with pwtool}}
    -JustTesting {{text:Plain Text}}
 ```
+
+# Licensing
+
+See [LICENSE.TXT](LICENSE.TXT)
+
